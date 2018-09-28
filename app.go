@@ -7,10 +7,14 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	. "github.com/masteruul/golang-with-mongoDB/config"
 	. "github.com/masteruul/golang-with-mongoDB/dao"
 	. "github.com/masteruul/golang-with-mongoDB/models"
 	"gopkg.in/mgo.v2/bson"
 )
+
+var config = Config{}
+var dao = MoviesDAO{}
 
 func AllMoviesEndPoint(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "not implemented yet !")
@@ -32,7 +36,7 @@ func CreateMovieEndPoint(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondWithJson(w, http.StatusCreated, movie)
+	respondWithJSON(w, http.StatusCreated, movie)
 }
 
 func UpdateMovieEndPoint(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +45,26 @@ func UpdateMovieEndPoint(w http.ResponseWriter, r *http.Request) {
 
 func DeleteMovieEndPoint(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "not implemented yet !")
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string) {
+	respondWithJSON(w, code, map[string]string{"error": msg})
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
+// Parse the configuration file 'config.toml', and establish a connection to DB
+func init() {
+	config.Read()
+
+	dao.Server = config.Server
+	dao.Database = config.Database
+	dao.Connect()
 }
 
 func main() {
